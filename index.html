@@ -200,7 +200,7 @@
                 try {
                     const { collection, query, where, getDocs, doc, updateDoc } = window.FB;
                     const deviceId = getDeviceId();
-                    const keysCol = collection(db, 'artifacts', 'rootscalc-pro', 'public', 'data', 'keys');
+                    const keysCol = collection(db, 'artifacts', 'rootscalc-pro', 'public', 'data', 'keys', key);
                     const q = query(keysCol, where('key', '==', activationKey.trim().toUpperCase()));
                     const snapshot = await getDocs(q);
 
