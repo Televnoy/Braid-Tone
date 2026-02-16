@@ -49,14 +49,14 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBk99RmIn2McXhLlMV4huc2iTUGONc7Zig",
-            authDomain: "rootscalc-1c302.firebaseapp.com",
-            projectId: "rootscalc-1c302",
-            storageBucket: "rootscalc-1c302.firebasestorage.app",
-            messagingSenderId: "466620468252",
-            appId: "1:466620468252:web:e65ad3b731f4315f06a3d9"
-        };
+       const firebaseConfig = {
+  apiKey: "AIzaSyBk99RmIn2McXhLlMV4huc2iTUGONc7Zig",
+  authDomain: "rootscalc-1c302.firebaseapp.com",
+  projectId: "rootscalc-1c302",
+  storageBucket: "rootscalc-1c302.firebasestorage.app",
+  messagingSenderId: "466620468252",
+  appId: "1:466620468252:web:e65ad3b731f4315f06a3d9"
+};
 
         const SmartIcon = ({ name, size = 24, className, fallback }) => {
             const [hasLocal, setHasLocal] = useState(true);
@@ -200,7 +200,7 @@
                 try {
                     const { collection, query, where, getDocs, doc, updateDoc } = window.FB;
                     const deviceId = getDeviceId();
-                    const keysCol = collection(db, 'artifacts', 'rootscalc-1c302', 'public', 'data', 'keys');
+                    const keysCol = collection(db, 'artifacts', 'rootscalc-pro', 'public', 'data', 'keys');
                     const q = query(keysCol, where('key', '==', activationKey.trim().toUpperCase()));
                     const snapshot = await getDocs(q);
 
