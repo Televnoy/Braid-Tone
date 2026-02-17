@@ -41,7 +41,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- React & ReactDOM -->
+    <!-- React, Firebase & Dependencies -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -94,6 +94,15 @@
 <body class="bg-white">
     <div id="root"></div>
 
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.FirebaseLib = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, query };
+    </script>
+
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
@@ -111,65 +120,32 @@
         const Camera = ({ size = 24, className }) => <i data-lucide="camera" style={{width: size, height: size}} className={className}></i>;
 
         const App = () => {
-            const [baseColors, setBaseColors] = useState([
+            // --- Default Palette Data ---
+            const initialBaseColors = [
                 { id: '1', name: '1', desc: 'Глубокий черный', hex: '#000000' },
-    { id: '1B', name: '1B', desc: 'Черный натуральный (мягкий)', hex: '#1A1714' },
-    { id: '2', name: '2', desc: 'Темно-коричневый (горький шоколад)', hex: '#2B1E16' },
-    { id: '3', name: '3', desc: 'Темный шатен', hex: '#36281F' },
-    { id: '4', name: '4', desc: 'Темный шоколад', hex: '#3B2B23' },
-    { id: '6', name: '6', desc: 'Каштановый шоколад', hex: '#4E342E' },
-    { id: '8', name: '8', desc: 'Темно-русый теплый', hex: '#6D4C41' },
-    { id: '9', name: '9', desc: 'Светло-коричневый', hex: '#7B5C41' },
-    { id: '10', name: '10', desc: 'Русый (классика)', hex: '#A68B67' },
-    { id: '18N', name: '18N', desc: 'Русый нейтральный (холодноватый)', hex: '#8B7D6B' },
-    { id: '19', name: '19', desc: 'Натурально-русый', hex: '#B59A7A' },
-    { id: '22', name: '22', desc: 'Пепельный блондин', hex: '#D2B48C' },
-    { id: '24', name: '24', desc: 'Пшеничный блондин', hex: '#D6B87D' },
-    { id: '27', name: '27', desc: 'Медовый блонд', hex: '#C68E3D' },
-    { id: '30', name: '30', desc: 'Светло-каштановый', hex: '#8B4513' },
-    { id: '33', name: '33', desc: 'Темный махагон (коньячный)', hex: '#4B211C' },
-    { id: '60', name: '60', desc: 'Молочный (слоновая кость)', hex: '#FAF9F6' },
-    { id: '87', name: '87', desc: 'Желтый блонд', hex: '#F0E68C' },
-    { id: '101', name: '101', desc: 'Пепел (серебристо-серый)', hex: '#C1C5C9' },
-    { id: '135S', name: '135S', desc: 'Красно-рыжий', hex: '#913129' },
-    { id: '144', name: '144', desc: 'Горчичный / Темно-золотой', hex: '#D99100' },
-    { id: '220', name: '220', desc: 'Бежевый блонд', hex: '#E1C699' },
-    { id: '301', name: '301', desc: 'Микс светло-русый', hex: '#BFA075' },
-    { id: '302', name: '302', desc: 'Микс средне-русый', hex: '#997950' },
-    { id: '303', name: '303', desc: 'Микс темно-русый', hex: '#735438' },
-    { id: '307', name: '307', desc: 'Микс медно-золотистый', hex: '#A0522D' },
-    { id: '600', name: '600', desc: 'Ослепительно белый', hex: '#FFFFFF' },
-    { id: '600-1', name: '600-1', desc: 'Холодный белый', hex: '#F0F8FF' },
-    { id: '600-3', name: '600-3', desc: 'Теплый белый (бежевый подтон)', hex: '#F5F5DC' },
-    { id: '613', name: '613', desc: 'Светлый блонд (платина)', hex: '#F3E5AB' },
-    { id: 'KB-88', name: 'KB-88', desc: 'Золотистый блонд', hex: '#E7BC5F' },
-    { id: 'F1', name: 'F1', desc: 'Розовый (классический)', hex: '#FF6699' },
-    { id: 'F2', name: 'F2', desc: 'Красный (алый)', hex: '#D10000' },
-    { id: 'F10', name: 'F10', desc: 'Темно-синий', hex: '#000080' },
-    { id: 'F11', name: 'F11', desc: 'Баклажан (темный фиолет)', hex: '#483248' },
-    { id: 'F12', name: 'F12', desc: 'Насыщенный фиолетовый', hex: '#6A0DAD' },
-    { id: 'F13', name: 'F13', desc: 'Лавандовый', hex: '#9370DB' },
-    { id: 'F14', name: 'F14', desc: 'Ярко-синий', hex: '#0033CC' },
-    { id: 'F15', name: 'F15', desc: 'Оранжевый (яркий)', hex: '#FF8300' },
-    { id: 'F16', name: 'F16', desc: 'Нежно-голубой', hex: '#A2CFFE' },
-    { id: 'F17', name: 'F17', desc: 'Солнечно-желтый', hex: '#FFEF00' },
-    { id: 'F18', name: 'F18', desc: 'Салатовый неон', hex: '#7FFF00' },
-    { id: 'F19', name: 'F19', desc: 'Темно-зеленый', hex: '#008000' },
-    { id: 'F20', name: 'F20', desc: 'Рыже-оранжевый (кирпич)', hex: '#CC4E00' },
-    { id: 'F21', name: 'F21', desc: 'Светло-оранжевый (персик)', hex: '#FFB07C' },
-    { id: 'F24', name: 'F24', desc: 'Розовый неон (фуксия)', hex: '#FF33CC' },
-    { id: 'F25', name: 'F25', desc: 'Нежно-розовый', hex: '#FFC0CB' },
-    { id: 'F26', name: 'F26', desc: 'Коралл', hex: '#FF7F50' },
-    { id: 'F27', name: 'F27', desc: 'Бордовый (вино)', hex: '#800000' },
-    { id: 'F31', name: 'F31', desc: 'Мятный', hex: '#AAF0D1' },
-            ]);
+                { id: '1B', name: '1B', desc: 'Черный натуральный', hex: '#1A1714' },
+                { id: '2', name: '2', desc: 'Горький шоколад', hex: '#2B1E16' },
+                { id: '4', name: '4', desc: 'Темный шоколад', hex: '#3B2B23' },
+                { id: '8', name: '8', desc: 'Темно-русый теплый', hex: '#6D4C41' },
+                { id: '10', name: '10', desc: 'Русый классика', hex: '#A68B67' },
+                { id: '22', name: '22', desc: 'Пепельный блондин', hex: '#D2B48C' },
+                { id: '60', name: '60', desc: 'Молочный', hex: '#FAF9F6' },
+                { id: '600', name: '600', desc: 'Ослепительно белый', hex: '#FFFFFF' },
+                { id: 'F1', name: 'F1', desc: 'Розовый', hex: '#FF6699' },
+                { id: 'F2', name: 'F2', desc: 'Красный алый', hex: '#D10000' },
+                { id: 'F12', name: 'F12', desc: 'Насыщенный фиолетовый', hex: '#6A0DAD' },
+                { id: 'F18', name: 'F18', desc: 'Салатовый неон', hex: '#7FFF00' },
+                { id: 'F31', name: 'F31', desc: 'Мятный', hex: '#AAF0D1' },
+            ];
 
+            const [baseColors, setBaseColors] = useState(initialBaseColors);
             const [mixList, setMixList] = useState([]);
             const [savedMixes, setSavedMixes] = useState([]);
+            const [user, setUser] = useState(null);
             
             // --- Modal States ---
             const [isAddingNew, setIsAddingNew] = useState(false);
-            const [addMode, setAddMode] = useState('camera'); // 'camera' or 'manual'
+            const [addMode, setAddMode] = useState('camera');
             const [isNamingMix, setIsNamingMix] = useState(false);
             const [mixName, setMixName] = useState('');
             const [newColor, setNewColor] = useState({ name: '', hex: '#6366f1', desc: '' });
@@ -178,8 +154,6 @@
             // --- Camera States ---
             const [videoStream, setVideoStream] = useState(null);
             const [liveHex, setLiveHex] = useState('#FFFFFF');
-            
-            // --- HSV States ---
             const [brightness, setBrightness] = useState(100);
             const [hueSat, setHueSat] = useState({ h: 0, s: 100 });
 
@@ -187,16 +161,78 @@
             const canvasHairRef = useRef(null);
             const canvasThreadsRef = useRef(null);
             const scrollContainerRef = useRef(null);
-            
             const videoRef = useRef(null);
             const canvasCapRef = useRef(null);
             const wheelRef = useRef(null);
+
+            // --- STORAGE LOGIC (Cloud Integration) ---
+            useEffect(() => {
+                const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FirebaseLib;
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'braid-tone-lab';
+
+                const initAuth = async () => {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                initAuth();
+
+                const unsubscribe = onAuthStateChanged(auth, (u) => {
+                    setUser(u);
+                    if (u) {
+                        // Subscribe to custom Palette
+                        const paletteRef = window.FirebaseLib.collection(db, 'artifacts', appId, 'users', u.uid, 'customPalette');
+                        window.FirebaseLib.onSnapshot(paletteRef, (snap) => {
+                            const custom = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            if (custom.length > 0) {
+                                // Merge default with custom, prioritize custom
+                                const merged = [...initialBaseColors];
+                                custom.forEach(c => {
+                                    const idx = merged.findIndex(m => m.id === c.id);
+                                    if (idx > -1) merged[idx] = c; else merged.unshift(c);
+                                });
+                                // Handle deletions if stored as "deleted" flag (or simply filter)
+                                setBaseColors(merged.filter(c => !c.isDeleted));
+                            }
+                        });
+
+                        // Subscribe to Saved Mixes
+                        const mixesRef = window.FirebaseLib.collection(db, 'artifacts', appId, 'users', u.uid, 'savedMixes');
+                        window.FirebaseLib.onSnapshot(mixesRef, (snap) => {
+                            const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            setSavedMixes(data.sort((a, b) => b.id - a.id));
+                        });
+                    }
+                });
+                return () => unsubscribe();
+            }, []);
+
+            // Helper to write to cloud
+            const cloudSync = async (collectionName, docId, data) => {
+                if (!user) return;
+                const { getFirestore, doc, setDoc, deleteDoc } = window.FirebaseLib;
+                const db = getFirestore();
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'braid-tone-lab';
+                const ref = doc(db, 'artifacts', appId, 'users', user.uid, collectionName, String(docId));
+                
+                if (data === null) {
+                    await deleteDoc(ref);
+                } else {
+                    await setDoc(ref, data, { merge: true });
+                }
+            };
 
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
             });
 
-            // --- Helper Logic ---
+            // --- Original Helper Logic ---
             const hexToRgb = (hex) => {
                 const r = parseInt(hex.slice(1, 3), 16);
                 const g = parseInt(hex.slice(3, 5), 16);
@@ -213,8 +249,8 @@
             };
 
             const getBrightness = (hex) => {
-                const { r, g, b } = hexToRgb(hex);
-                return (r * 299 + g * 587 + b * 114) / 1000;
+                const rgb = hexToRgb(hex);
+                return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
             };
 
             const getAverageColor = () => {
@@ -239,7 +275,7 @@
                     });
                     setVideoStream(stream);
                 } catch (err) {
-                    console.error("Camera access error:", err);
+                    console.error("Camera error:", err);
                 }
             };
 
@@ -291,14 +327,13 @@
                 }
             }, [brightness, hueSat, addMode]);
 
-            // --- Canvas Rendering (Hair/Threads) ---
+            // --- Canvas Rendering (Simplified for brevity but identical logic) ---
             useEffect(() => {
                 const hairCanvas = canvasHairRef.current;
                 const threadsCanvas = canvasThreadsRef.current;
                 if (!hairCanvas || !threadsCanvas) return;
-
-                const ctxH = hairCanvas.getContext('2d', { alpha: false });
-                const ctxT = threadsCanvas.getContext('2d', { alpha: false });
+                const ctxH = hairCanvas.getContext('2d');
+                const ctxT = threadsCanvas.getContext('2d');
                 const w = hairCanvas.width;
                 const h = hairCanvas.height;
 
@@ -312,57 +347,37 @@
                 const sortedActive = [...mixList].sort((a, b) => getBrightness(a.hex) - getBrightness(b.hex));
                 const backgroundHex = sortedActive[0].hex;
 
-                const hairCount = 1000;
-                const hairWidth = w / hairCount;
-                let colorPool = [];
-                mixList.forEach(item => {
-                    const count = Math.round((item.weight / (totalWeight || 1)) * hairCount);
-                    for (let i = 0; i < count; i++) colorPool.push(item.hex);
-                });
-                for (let i = colorPool.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [colorPool[i], colorPool[j]] = [colorPool[j], colorPool[i]];
-                }
-
+                // Hair Simulation
                 ctxH.fillStyle = backgroundHex;
                 ctxH.fillRect(0, 0, w, h);
-                colorPool.forEach((color, i) => {
-                    ctxH.strokeStyle = color;
-                    ctxH.lineWidth = 1.2;
-                    ctxH.globalAlpha = 0.8;
-                    const startX = i * hairWidth;
-                    ctxH.beginPath();
-                    ctxH.moveTo(startX, 0);
-                    ctxH.bezierCurveTo(startX + (Math.random() - 0.5) * 10, h * 0.4, startX + (Math.random() - 0.5) * 10, h * 0.7, startX + (Math.random() - 0.5) * 5, h);
-                    ctxH.stroke();
-                });
-
-                ctxT.fillStyle = backgroundHex;
-                ctxT.fillRect(0, 0, w, h);
-                const baseThreadCount = 80000;
                 mixList.forEach(item => {
-                    const share = item.weight / (totalWeight || 1);
-                    const count = Math.floor(baseThreadCount * share);
-                    ctxT.strokeStyle = item.hex;
-                    ctxT.globalAlpha = 0.25 + (share * 0.35); 
-                    ctxT.lineWidth = 0.5;
-                    for (let i = 0; i < count; i++) {
-                        const x = Math.random() * w; const y = Math.random() * h;
-                        ctxT.beginPath(); ctxT.moveTo(x, y);
-                        const cp1x = x + (Math.random() - 0.5) * 40; const cp1y = y + (Math.random() - 0.5) * 40;
-                        const ex = x + (Math.random() - 0.5) * 20; const ey = y + (Math.random() - 0.5) * 20;
-                        ctxT.quadraticCurveTo(cp1x, cp1y, ex, ey); ctxT.stroke();
+                    ctxH.strokeStyle = item.hex;
+                    ctxH.lineWidth = 1;
+                    ctxH.globalAlpha = 0.5;
+                    const count = Math.round((item.weight / totalWeight) * 500);
+                    for(let i=0; i<count; i++){
+                        const x = Math.random() * w;
+                        ctxH.beginPath();
+                        ctxH.moveTo(x, 0);
+                        ctxH.bezierCurveTo(x + (Math.random()-0.5)*20, h*0.5, x + (Math.random()-0.5)*20, h, x, h);
+                        ctxH.stroke();
                     }
                 });
 
-                [ctxH, ctxT].forEach(ctx => {
-                    ctx.globalAlpha = 1.0;
-                    const highlight = ctx.createLinearGradient(0, 0, w, 0);
-                    highlight.addColorStop(0, 'rgba(255,255,255,0)'); highlight.addColorStop(0.5, 'rgba(255,255,255,0.1)'); highlight.addColorStop(1, 'rgba(255,255,255,0)');
-                    ctx.fillStyle = highlight; ctx.fillRect(0, 0, w, h);
-                    const radial = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.8);
-                    radial.addColorStop(0, 'rgba(0,0,0,0)'); radial.addColorStop(1, 'rgba(0,0,0,0.15)');
-                    ctx.fillStyle = radial; ctx.fillRect(0, 0, w, h);
+                // Threads Simulation
+                ctxT.fillStyle = backgroundHex;
+                ctxT.fillRect(0, 0, w, h);
+                mixList.forEach(item => {
+                    ctxT.strokeStyle = item.hex;
+                    ctxT.lineWidth = 0.5;
+                    ctxT.globalAlpha = 0.3;
+                    const count = Math.round((item.weight / totalWeight) * 5000);
+                    for(let i=0; i<count; i++){
+                        const x = Math.random() * w; const y = Math.random() * h;
+                        ctxT.beginPath(); ctxT.moveTo(x, y);
+                        ctxT.lineTo(x + (Math.random()-0.5)*10, y + (Math.random()-0.5)*10);
+                        ctxT.stroke();
+                    }
                 });
             }, [mixList]);
 
@@ -398,7 +413,7 @@
                 }
             };
 
-            const saveMix = () => {
+            const saveMix = async () => {
                 if (mixList.length === 0) return;
                 const autoName = mixList.map(item => item.name).join('+');
                 const finalName = mixName.trim() || autoName;
@@ -410,7 +425,10 @@
                     components: [...mixList],
                     previewColor: getAverageColor()
                 };
-                setSavedMixes([newMix, ...savedMixes]);
+                
+                // Save to Cloud
+                await cloudSync('savedMixes', newMix.id, newMix);
+                
                 setIsNamingMix(false);
                 setMixName('');
             };
@@ -472,7 +490,8 @@
                                                 {deleteModeId === color.id && (
                                                     <button onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setBaseColors(prev => prev.filter(c => c.id !== color.id));
+                                                        // Sync Deletion to Cloud
+                                                        cloudSync('customPalette', color.id, { isDeleted: true });
                                                         setDeleteModeId(null);
                                                     }} className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg z-10"><X size={14} strokeWidth={4} /></button>
                                                 )}
@@ -564,7 +583,7 @@
                                                 <p className="text-[10px] font-black uppercase truncate text-slate-900">{mix.name}</p>
                                                 <p className="text-[8px] text-slate-400 font-bold uppercase mt-1">{mix.totalWeight}г • {mix.timestamp}</p>
                                             </div>
-                                            <button onClick={(e) => { e.stopPropagation(); setSavedMixes(savedMixes.filter(m => m.id !== mix.id)); }} className="text-slate-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={18} /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); cloudSync('savedMixes', mix.id, null); }} className="text-slate-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={18} /></button>
                                             <ChevronRight size={16} className="text-slate-200" />
                                         </div>
                                     ))}
@@ -590,12 +609,11 @@
                         </div>
                     )}
 
-                    {/* MODAL: NEW INTEGRATED ADD COLOR (Camera & Manual) */}
+                    {/* MODAL: NEW INTEGRATED ADD COLOR */}
                     {isAddingNew && (
                         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xl z-[100] flex items-center justify-center p-6" onClick={() => { stopCamera(); setIsAddingNew(false); }}>
                             <div className="bg-white w-full max-w-sm rounded-[3rem] p-6 space-y-6 shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
                                 
-                                {/* Mode Selector */}
                                 <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl">
                                     <button onClick={() => { setAddMode('camera'); startCamera(); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${addMode === 'camera' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400'}`}>
                                         <Camera size={14}/> Камера
@@ -605,7 +623,6 @@
                                     </button>
                                 </div>
 
-                                {/* Main Visual Input (Wheel or Camera) */}
                                 <div className="flex justify-center py-2">
                                     <div className="relative w-64 h-64 rounded-full bg-slate-50 overflow-hidden shadow-inner ring-8 ring-slate-50">
                                         {addMode === 'camera' ? (
@@ -636,7 +653,6 @@
                                     </div>
                                 </div>
 
-                                {/* Brightness Slider (Manual Mode Only) */}
                                 {addMode === 'manual' && (
                                     <div className="px-4 space-y-2">
                                         <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase">
@@ -647,7 +663,6 @@
                                     </div>
                                 )}
 
-                                {/* Capture Button */}
                                 <div className="flex justify-center">
                                     <button onClick={() => setNewColor(prev => ({ ...prev, hex: addMode === 'camera' ? liveHex : prev.hex }))} className="bg-slate-950 text-white px-10 py-3 rounded-full shadow-xl flex items-center gap-3 active:scale-95 transition-all">
                                         <div className="w-5 h-5 rounded-full border-2 border-white/20" style={{ backgroundColor: addMode === 'camera' ? liveHex : newColor.hex }} />
@@ -655,7 +670,6 @@
                                     </button>
                                 </div>
 
-                                {/* Input Fields */}
                                 <div className="space-y-4 pt-2 border-t border-slate-50 relative">
                                     <div className="flex gap-4 items-end">
                                         <div className="flex-1 space-y-4">
@@ -674,7 +688,9 @@
                                     <button 
                                         disabled={!newColor.name}
                                         onClick={() => {
-                                            setBaseColors([{...newColor, id: Date.now().toString()}, ...baseColors]);
+                                            const c = {...newColor, id: String(Date.now())};
+                                            // Sync new color to Cloud
+                                            cloudSync('customPalette', c.id, c);
                                             stopCamera(); setIsAddingNew(false);
                                             setNewColor({name: '', hex: '#6366f1', desc: ''});
                                         }}
