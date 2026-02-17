@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Braid Tone Laboratory</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Braid Tone">
     <meta name="theme-color" content="#ffffff">
-    
-    <!-- Icons (Looking for logo.svg in the same directory) -->
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="logo.svg">
     <link rel="apple-touch-icon" href="logo.svg">
-    
+
     <script>
-        // Динамическое создание манифеста с относительным путем к иконке
+        // Динамическое создание манифеста с плоской иконкой
         const manifest = {
             "name": "Braid Tone Laboratory",
             "short_name": "Braid Tone",
@@ -28,9 +28,15 @@
             "icons": [
                 {
                     "src": "logo.svg",
-                    "sizes": "any",
+                    "sizes": "192x192 512x512",
                     "type": "image/svg+xml",
-                    "purpose": "any maskable"
+                    "purpose": "any"
+                },
+                {
+                    "src": "logo.svg",
+                    "sizes": "192x192 512x512",
+                    "type": "image/svg+xml",
+                    "purpose": "maskable"
                 }
             ]
         };
@@ -43,7 +49,7 @@
     <!-- Tailwind & Lucide -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -51,7 +57,7 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
+
         body {
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
@@ -60,7 +66,7 @@
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
+
         @keyframes rotate-reset { 
             from { transform: rotate(0deg); } 
             to { transform: rotate(180deg); } 
@@ -142,7 +148,7 @@
             });
 
             const [mixList, setMixList] = useState([]);
-            
+
             useEffect(() => {
                 localStorage.setItem('bt_palette', JSON.stringify(baseColors));
             }, [baseColors]);
@@ -157,10 +163,10 @@
             const [mixName, setMixName] = useState('');
             const [newColor, setNewColor] = useState({ name: '', hex: '#6366f1', desc: '' });
             const [deleteModeId, setDeleteModeId] = useState(null);
-            
+
             const [videoStream, setVideoStream] = useState(null);
             const [liveHex, setLiveHex] = useState('#FFFFFF');
-            
+
             const [brightness, setBrightness] = useState(100);
             const [hueSat, setHueSat] = useState({ h: 0, s: 100 });
 
@@ -168,7 +174,7 @@
             const canvasHairRef = useRef(null);
             const canvasThreadsRef = useRef(null);
             const scrollContainerRef = useRef(null);
-            
+
             const videoRef = useRef(null);
             const canvasCapRef = useRef(null);
             const wheelRef = useRef(null);
@@ -402,12 +408,12 @@
 
             return (
                 <div className="min-h-screen bg-white text-slate-900 font-sans antialiased pb-24 select-none overflow-x-hidden" onClick={() => deleteModeId && setDeleteModeId(null)}>
-                    
+
                     {/* Header */}
                     <header className="max-w-xl mx-auto px-6 py-4 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur-md z-50 border-b border-slate-50">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg border border-slate-100 overflow-hidden">
-                                <img src="logo.svg" className="w-8 h-8 object-contain" alt="Logo" onError={(e) => { e.target.style.display='none'; }} />
+                            <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
+                                <img src="logo.svg" className="w-10 h-10 object-contain" alt="Logo" />
                             </div>
                             <div>
                                 <h1 className="text-xl font-black tracking-tight uppercase leading-none">Braid Tone</h1>
@@ -564,7 +570,7 @@
                     {isAddingNew && (
                         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xl z-[100] flex items-center justify-center p-6" onClick={() => { stopCamera(); setIsAddingNew(false); }}>
                             <div className="bg-white w-full max-w-sm rounded-[3rem] p-6 space-y-6 shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-                                
+
                                 <div className="flex gap-1 bg-slate-100 p-1 rounded-2xl">
                                     <button onClick={() => { setAddMode('camera'); startCamera(); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${addMode === 'camera' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400'}`}>
                                         <Camera size={14}/> Камера
@@ -660,4 +666,3 @@
     </script>
 </body>
 </html>
-
