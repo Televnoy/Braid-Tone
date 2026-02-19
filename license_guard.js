@@ -17,7 +17,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const APP_ID = "rootscalc-pro"; 
-const TRIAL_TIME = 10 * 60 * 1000; // 10 минут
+const TRIAL_TIME = 10 * 1000; // 10 минут
 const STORAGE_KEY = 'bt_trial_start';
 const LICENSE_KEY_STORE = 'bt_license_active';
 
