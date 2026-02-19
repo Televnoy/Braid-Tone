@@ -16,14 +16,15 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ОБНОВЛЕНО: ID документа в коллекции artifacts
 const APP_ID = "rootscalc-pro"; 
-
 const TRIAL_TIME = 10 * 60 * 1000; // 10 минут
 const STORAGE_KEY = 'bt_trial_start';
 const LICENSE_KEY_STORE = 'bt_license_active';
 
+let checkInterval = null;
+
 async function initGuard() {
+    // Если уже активировано — ничего не делаем
     if (localStorage.getItem(LICENSE_KEY_STORE) === 'true') return;
 
     let startTime = localStorage.getItem(STORAGE_KEY);
@@ -33,6 +34,12 @@ async function initGuard() {
     }
 
     const checkTrial = () => {
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: если в процессе работы ключ был введен, прекращаем проверки
+        if (localStorage.getItem(LICENSE_KEY_STORE) === 'true') {
+            if (checkInterval) clearInterval(checkInterval);
+            return true;
+        }
+
         if (Date.now() - parseInt(startTime) > TRIAL_TIME) {
             showLockScreen();
             return true;
@@ -40,7 +47,8 @@ async function initGuard() {
         return false;
     };
 
-    const interval = setInterval(checkTrial, 5000);
+    // Проверяем каждые 5 секунд
+    checkInterval = setInterval(checkTrial, 5000);
     checkTrial();
 }
 
@@ -105,7 +113,8 @@ async function showLockScreen() {
     document.body.appendChild(overlay);
 
     document.getElementById('license-submit').onclick = async () => {
-        const key = document.getElementById('license-input').value.trim();
+        const keyInput = document.getElementById('license-input');
+        const key = keyInput.value.trim();
         const msg = document.getElementById('license-msg');
         if (!key) return;
 
@@ -116,7 +125,6 @@ async function showLockScreen() {
             const userCred = await signInAnonymously(auth);
             const uid = userCred.user.uid;
 
-            // ОБНОВЛЕНО: Используется путь /public/data/keys/
             const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'keys', key);
             const docSnap = await getDoc(docRef);
 
@@ -127,17 +135,22 @@ async function showLockScreen() {
                     msg.style.color = "#d93025";
                     msg.innerText = "Ключ привязан к другому устройству";
                 } else {
-                    // Если ключ найден и активен (или поле active отсутствует, считаем активным по умолчанию)
                     if (data.active === false) {
                         msg.style.color = "#d93025";
                         msg.innerText = "Ключ деактивирован";
                         return;
                     }
 
+                    // Сохраняем успешную активацию ПЕРЕД удалением окна
+                    localStorage.setItem(LICENSE_KEY_STORE, 'true');
+                    
+                    // Останавливаем таймер проверок навсегда
+                    if (checkInterval) clearInterval(checkInterval);
+
                     if (!data.ownerId) {
                         await updateDoc(docRef, { ownerId: uid, active: true });
                     }
-                    localStorage.setItem(LICENSE_KEY_STORE, 'true');
+                    
                     overlay.remove();
                 }
             } else {
@@ -153,3 +166,4 @@ async function showLockScreen() {
 }
 
 window.addEventListener('load', initGuard);
+
