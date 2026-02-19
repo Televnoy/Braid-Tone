@@ -17,7 +17,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const APP_ID = "rootscalc-1c302";
 
-const TRIAL_TIME = 10 * 60 * 1000; 
+const TRIAL_TIME = 10 * 1000; 
 const STORAGE_KEY = 'bt_trial_start';
 const LICENSE_KEY_STORE = 'bt_license_active';
 
