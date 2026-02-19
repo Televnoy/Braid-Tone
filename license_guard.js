@@ -9,15 +9,17 @@ const firebaseConfig = {
 };
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const APP_ID = "rootscalc-pro";
 
-const TRIAL_TIME = 10 * 1000; 
+// ОБНОВЛЕНО: ID документа в коллекции artifacts
+const APP_ID = "rootscalc-pro"; 
+
+const TRIAL_TIME = 10 * 60 * 1000; // 10 минут
 const STORAGE_KEY = 'bt_trial_start';
 const LICENSE_KEY_STORE = 'bt_license_active';
 
@@ -45,7 +47,6 @@ async function initGuard() {
 async function showLockScreen() {
     if (document.getElementById('license-overlay')) return;
 
-    // Получаем UID для отображения внизу как ID устройства
     let currentUid = "Загрузка...";
     try {
         const userCred = await signInAnonymously(auth);
@@ -66,7 +67,6 @@ async function showLockScreen() {
 
     overlay.innerHTML = `
         <div style="width: 100%; max-width: 350px; text-align: center;">
-            <!-- Логотип приложения -->
             <div style="margin-bottom: 40px;">
                 <h1 style="letter-spacing: 5px; font-weight: 500; font-size: 1.2rem; text-transform: uppercase; margin-bottom: 30px;">
                     BRAID TONE
@@ -77,18 +77,15 @@ async function showLockScreen() {
                 <h2 style="font-weight: 400; font-size: 1.5rem; margin-top: 0;">Активация устройства</h2>
             </div>
 
-            <!-- Поле ввода -->
             <input type="text" id="license-input" placeholder="XXXX - XXXX - XXXX" 
                 style="width: 100%; padding: 15px; border: 1px solid #1a1a1a; border-radius: 0; 
                 font-size: 1rem; letter-spacing: 2px; text-align: center; margin-bottom: 20px; box-sizing: border-box; outline: none;">
 
-            <!-- Кнопка -->
             <button id="license-submit" style="width: 100%; background: #121621; color: white; border: none; 
                 padding: 18px; font-size: 0.9rem; letter-spacing: 3px; cursor: pointer; text-transform: uppercase; font-weight: bold;">
                 Активировать
             </button>
 
-            <!-- Ссылка в стиле текста -->
             <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 30px;">
                 <p style="color: #999; font-size: 0.8rem;">
                     Ключ можно приобрести 
@@ -96,7 +93,6 @@ async function showLockScreen() {
                 </p>
             </div>
 
-            <!-- ID устройства -->
             <div style="margin-top: 40px;">
                 <p style="color: #ccc; font-size: 0.65rem; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px;">ID устройства:</p>
                 <p id="display-uid" style="color: #bbb; font-size: 0.7rem; word-break: break-all; font-family: monospace;">${currentUid}</p>
@@ -120,7 +116,8 @@ async function showLockScreen() {
             const userCred = await signInAnonymously(auth);
             const uid = userCred.user.uid;
 
-            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'license_keys', key);
+            // ОБНОВЛЕНО: Используется путь /public/data/keys/
+            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'keys', key);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
@@ -130,8 +127,15 @@ async function showLockScreen() {
                     msg.style.color = "#d93025";
                     msg.innerText = "Ключ привязан к другому устройству";
                 } else {
+                    // Если ключ найден и активен (или поле active отсутствует, считаем активным по умолчанию)
+                    if (data.active === false) {
+                        msg.style.color = "#d93025";
+                        msg.innerText = "Ключ деактивирован";
+                        return;
+                    }
+
                     if (!data.ownerId) {
-                        await updateDoc(docRef, { ownerId: uid });
+                        await updateDoc(docRef, { ownerId: uid, active: true });
                     }
                     localStorage.setItem(LICENSE_KEY_STORE, 'true');
                     overlay.remove();
@@ -142,7 +146,7 @@ async function showLockScreen() {
             }
         } catch (e) {
             msg.style.color = "#d93025";
-            msg.innerText = "Ошибка соединения";
+            msg.innerText = "Ошибка соединения или доступа";
             console.error(e);
         }
     };
