@@ -15,7 +15,7 @@ import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/fi
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const APP_ID = "rootscalc-1c302";
+const APP_ID = "rootscalc-pro";
 
 const TRIAL_TIME = 10 * 1000; 
 const STORAGE_KEY = 'bt_trial_start';
