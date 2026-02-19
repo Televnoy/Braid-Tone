@@ -17,14 +17,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const APP_ID = "rootscalc-pro"; 
-const TRIAL_TIME = 10 * 1000; // 10 минут
+const TRIAL_TIME = 10 * 60 * 1000; 
 const STORAGE_KEY = 'bt_trial_start';
 const LICENSE_KEY_STORE = 'bt_license_active';
 
 let checkInterval = null;
 
 async function initGuard() {
-    // Если уже активировано — ничего не делаем
     if (localStorage.getItem(LICENSE_KEY_STORE) === 'true') return;
 
     let startTime = localStorage.getItem(STORAGE_KEY);
@@ -34,7 +33,6 @@ async function initGuard() {
     }
 
     const checkTrial = () => {
-        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: если в процессе работы ключ был введен, прекращаем проверки
         if (localStorage.getItem(LICENSE_KEY_STORE) === 'true') {
             if (checkInterval) clearInterval(checkInterval);
             return true;
@@ -47,7 +45,6 @@ async function initGuard() {
         return false;
     };
 
-    // Проверяем каждые 5 секунд
     checkInterval = setInterval(checkTrial, 5000);
     checkTrial();
 }
@@ -65,52 +62,68 @@ async function showLockScreen() {
 
     const overlay = document.createElement('div');
     overlay.id = 'license-overlay';
+    // Обновленный стиль: Темный фон с легким размытием заднего плана
     overlay.style = `
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: white; z-index: 999999;
+        background: rgba(13, 13, 18, 0.95); 
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        z-index: 999999;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #ffffff; font-family: 'Inter', -apple-system, sans-serif;
         padding: 20px; box-sizing: border-box;
     `;
 
     overlay.innerHTML = `
-        <div style="width: 100%; max-width: 350px; text-align: center;">
-            <div style="margin-bottom: 40px;">
-                <h1 style="letter-spacing: 5px; font-weight: 500; font-size: 1.2rem; text-transform: uppercase; margin-bottom: 30px;">
+        <div style="width: 100%; max-width: 380px; text-align: center; background: #1a1a24; padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);">
+            
+            <div style="margin-bottom: 35px;">
+                <!-- Иконка или стилизованный заголовок -->
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #6d5dfc, #b085f5); margin: 0 auto 20px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(109, 93, 252, 0.4);">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3y-3.5 3.5"></path></svg>
+                </div>
+                
+                <h1 style="letter-spacing: 4px; font-weight: 700; font-size: 1.4rem; text-transform: uppercase; margin: 0 0 10px; background: linear-gradient(to right, #fff, #a5a5a5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                     BRAID TONE
                 </h1>
-                <p style="color: #999; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 5px;">
-                    Пробный период завершен
+                <p style="color: #6d5dfc; text-transform: uppercase; font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 20px;">
+                    Лицензия не найдена
                 </p>
-                <h2 style="font-weight: 400; font-size: 1.5rem; margin-top: 0;">Активация устройства</h2>
             </div>
 
-            <input type="text" id="license-input" placeholder="XXXX - XXXX - XXXX" 
-                style="width: 100%; padding: 15px; border: 1px solid #1a1a1a; border-radius: 0; 
-                font-size: 1rem; letter-spacing: 2px; text-align: center; margin-bottom: 20px; box-sizing: border-box; outline: none;">
+            <div style="position: relative; margin-bottom: 20px;">
+                <input type="text" id="license-input" placeholder="Ключ активации" 
+                    style="width: 100%; padding: 16px; background: #0f0f15; border: 1px solid #2a2a3a; border-radius: 12px; 
+                    font-size: 1rem; color: white; text-align: center; box-sizing: border-box; outline: none; transition: border 0.3s ease;">
+            </div>
 
-            <button id="license-submit" style="width: 100%; background: #121621; color: white; border: none; 
-                padding: 18px; font-size: 0.9rem; letter-spacing: 3px; cursor: pointer; text-transform: uppercase; font-weight: bold;">
-                Активировать
+            <button id="license-submit" style="width: 100%; background: #6d5dfc; color: white; border: none; 
+                padding: 16px; font-size: 1rem; border-radius: 12px; cursor: pointer; font-weight: 600; transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 15px rgba(109, 93, 252, 0.3);">
+                АКТИВИРОВАТЬ
             </button>
 
-            <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 30px;">
-                <p style="color: #999; font-size: 0.8rem;">
-                    Ключ можно приобрести 
-                    <a href="https://t.me/afro_perm" target="_blank" style="color: #999; text-decoration: none; border-bottom: 1px solid #ccc;">@afro_perm</a>
+            <div style="margin-top: 35px; padding-top: 25px; border-top: 1px solid #2a2a3a;">
+                <p style="color: #888; font-size: 0.85rem; margin-bottom: 5px;">
+                    Нет ключа? Напишите нам:
                 </p>
+                <a href="https://t.me/afro_perm" target="_blank" style="color: #6d5dfc; text-decoration: none; font-weight: 600; font-size: 0.9rem;">@afro_perm</a>
             </div>
 
-            <div style="margin-top: 40px;">
-                <p style="color: #ccc; font-size: 0.65rem; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px;">ID устройства:</p>
-                <p id="display-uid" style="color: #bbb; font-size: 0.7rem; word-break: break-all; font-family: monospace;">${currentUid}</p>
+            <div style="margin-top: 30px;">
+                <p style="color: #444; font-size: 0.6rem; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px;">Device Signature:</p>
+                <p id="display-uid" style="color: #555; font-size: 0.65rem; word-break: break-all; font-family: 'Monaco', monospace; opacity: 0.7;">${currentUid}</p>
             </div>
 
-            <div id="license-msg" style="margin-top: 20px; font-size: 0.85rem; height: 20px; color: #d93025;"></div>
+            <div id="license-msg" style="margin-top: 15px; font-size: 0.8rem; height: 18px; font-weight: 500;"></div>
         </div>
     `;
 
     document.body.appendChild(overlay);
+
+    // Эффект нажатия на кнопку
+    const btn = document.getElementById('license-submit');
+    btn.onmousedown = () => btn.style.transform = 'scale(0.98)';
+    btn.onmouseup = () => btn.style.transform = 'scale(1)';
 
     document.getElementById('license-submit').onclick = async () => {
         const keyInput = document.getElementById('license-input');
@@ -118,8 +131,8 @@ async function showLockScreen() {
         const msg = document.getElementById('license-msg');
         if (!key) return;
 
-        msg.style.color = "#1a1a1a";
-        msg.innerText = "Проверка ключа...";
+        msg.style.color = "#888";
+        msg.innerText = "Авторизация...";
 
         try {
             const userCred = await signInAnonymously(auth);
@@ -132,38 +145,36 @@ async function showLockScreen() {
                 const data = docSnap.data();
 
                 if (data.ownerId && data.ownerId !== uid) {
-                    msg.style.color = "#d93025";
-                    msg.innerText = "Ключ привязан к другому устройству";
+                    msg.style.color = "#ff4d4d";
+                    msg.innerText = "Привязано к другому устройству";
                 } else {
                     if (data.active === false) {
-                        msg.style.color = "#d93025";
+                        msg.style.color = "#ff4d4d";
                         msg.innerText = "Ключ деактивирован";
                         return;
                     }
 
-                    // Сохраняем успешную активацию ПЕРЕД удалением окна
                     localStorage.setItem(LICENSE_KEY_STORE, 'true');
-                    
-                    // Останавливаем таймер проверок навсегда
                     if (checkInterval) clearInterval(checkInterval);
 
                     if (!data.ownerId) {
                         await updateDoc(docRef, { ownerId: uid, active: true });
                     }
                     
-                    overlay.remove();
+                    msg.style.color = "#00ff88";
+                    msg.innerText = "Успешно! Запуск...";
+                    setTimeout(() => overlay.remove(), 1000);
                 }
             } else {
-                msg.style.color = "#d93025";
-                msg.innerText = "Неверный ключ активации";
+                msg.style.color = "#ff4d4d";
+                msg.innerText = "Неверный код активации";
             }
         } catch (e) {
-            msg.style.color = "#d93025";
-            msg.innerText = "Ошибка соединения или доступа";
+            msg.style.color = "#ff4d4d";
+            msg.innerText = "Ошибка сети";
             console.error(e);
         }
     };
 }
 
 window.addEventListener('load', initGuard);
-
